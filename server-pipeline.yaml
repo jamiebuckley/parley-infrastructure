@@ -21,6 +21,19 @@ Resources:
         - ParleyServerPipeline
         - Version
       RegisterWithThirdParty: true
+  ParleyServerBuildProject:
+    Type: 'AWS::CodeBuild::Project'
+    Properties:
+      Name: ParleyServerBuild
+      ServiceRole: !Ref PipelineRole
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+      Source:
+        Type: CODEPIPELINE
   ParleyServerPipeline:
     Type: 'AWS::CodePipeline::Pipeline'
     Properties:
@@ -44,19 +57,21 @@ Resources:
                 OAuthToken: '{{resolve:secretsmanager:GithubKey:SecretString:githubkey}}'
                 PollForSourceChanges: false
               RunOrder: 1
-        - Name: Beta
+        - Name: Build
           Actions:
-            - Name: BetaAction
+            - Name: BuildAction
               InputArtifacts:
                 - Name: SourceOutput
               ActionTypeId:
-                Category: Deploy
+                Category: Build
                 Owner: AWS
                 Version: 1
-                Provider: CodeDeploy
+                Provider: CodeBuild
+              OutputArtifacts:
+                - Name: BuildOutput
               Configuration:
-                ApplicationName: ParleyServer
-                DeploymentGroupName: ParleyFleet
+                ProjectName: ParleyServerBuild
+                PrimarySource: SourceOutput
               RunOrder: 1
       ArtifactStore:
         Type: S3

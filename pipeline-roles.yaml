@@ -10,6 +10,11 @@ Resources:
               Service:
                 - codepipeline.amazonaws.com
             Action: 'sts:AssumeRole'
+          - Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+            Action: 'sts:AssumeRole'
       Path: /
       Policies:
         - PolicyName: ParleyPipelineServicePolicy
@@ -26,8 +31,7 @@ Resources:
                 Resource: '*'
               - Effect: Allow
                 Action:
-                  - 'codebuild:BatchGetBuilds'
-                  - 'codebuild:StartBuild'
+                  - 'codebuild:*'
                 Resource: '*'
               - Effect: Allow
                 Action:
