@@ -39,11 +39,18 @@ Resources:
                 Resource: '*'
               - Effect: Allow
                 Action:
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:CompleteLayerUpload'
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:InitiateLayerUpload'
+                  - 'ecr:PutImage'
+                  - 'ecr:UploadLayerPart'
                   - 'ec2:*'
                   - 'cloudwatch:*'
                   - 's3:*'
                   - 'cloudformation:*'
                   - 'ecs:*'
+                  - 'logs:*'
                 Resource: '*'
 Outputs:
   PipelineRole:
