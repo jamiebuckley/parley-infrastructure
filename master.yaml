@@ -18,3 +18,9 @@ Resources:
       TemplateURL: https://s3.eu-west-2.amazonaws.com/infrastructure.parley.abstractmechanics.co.uk/server-pipeline.yaml
       Parameters:
         PipelineRole: !GetAtt PipelineRoles.Outputs.PipelineRole
+  ECSService:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.eu-west-2.amazonaws.com/infrastructure.parley.abstractmechanics.co.uk/ecs-service.yaml
+      Parameters:
+        ClusterName: !GetAtt ECS.Outputs.Name

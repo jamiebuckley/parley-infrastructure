@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: The service and task for Parley backend service
+Parameters:
+  ClusterName:
+    Type: String
+Resources:
+  ECSService:
+    Type: "AWS::ECS::Service"
+    DependsOn: ECSTask
+    Properties:
+      Cluster: !Ref ClusterName
+      DesiredCount: 1
+      LaunchType: EC2
+      ServiceName: parley-ecs-service
+      TaskDefinition: !Ref ECSTask
+  ECSTask:
+    Type: "AWS::ECS::TaskDefinition"
+    Properties:
+      Family: parley-family
+      Cpu: 256
+      Memory: 256
+      ContainerDefinitions:
+        - Name: ParleyContainer
+          Image: 572391843849.dkr.ecr.eu-west-2.amazonaws.com/dev:latest
+          PortMappings:
+            - ContainerPort: 8080
+              HostPort: 80

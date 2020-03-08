@@ -28,6 +28,11 @@ Resources:
       ServiceRole: !Ref PipelineRole
       Artifacts:
         Type: CODEPIPELINE
+      Cache:
+        Location: LOCAL
+        Modes:
+          - LOCAL_DOCKER_LAYER_CACHE
+        Type: LOCAL
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -74,6 +79,19 @@ Resources:
                 ProjectName: ParleyServerBuild
                 PrimarySource: SourceOutput
               RunOrder: 1
+        - Name: Deploy
+          Actions:
+            - Name: DeployAction
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                ChangeSetName: Deploy
+                ActionMode: CHANGE_SET_EXECUTE
+                StackName: ParleyCluster
+                Capabilities: CAPABILITY_NAMED_IAM
       ArtifactStore:
         Type: S3
         Location: !Ref ParleyServerArtifactStoreBucket
