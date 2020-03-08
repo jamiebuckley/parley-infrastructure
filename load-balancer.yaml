@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Load Balancer for Parley
+Parameters:
+  Subnets:
+    Description: Subnets for ECS cluster
+    Type: List<AWS::EC2::Subnet::Id>
+Resources:
+  LoadBalancer:
+    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    Properties:
+      IpAddressType: ipv4
+      Name: ParleyLoadBalancer
+      Subnets: !Ref Subnets
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref DefaultTargetGroup
+  DefaultTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: parley-alb-tg
+      VpcId: vpc-7648db1e
+      Port: 80
+      Protocol: HTTP
+Outputs:
+  Listener:
+    Description: Reference of the load balancer listener
+    Value: !Ref LoadBalancerListener
