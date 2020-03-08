@@ -8,6 +8,9 @@ Parameters:
   Subnets:
     Description: Subnets for ECS cluster
     Type: List<AWS::EC2::Subnet::Id>
+  LBSecurityGroup:
+    Description: Security group for load balancer
+    Type: String
 Resources:
   ECSCluster:
     Type: "AWS::ECS::Cluster"
@@ -26,6 +29,17 @@ Resources:
         - Key: Name
           Value: ECS host
           PropagateAtLaunch: true
+  ECSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: vpc-7648db1e
+      GroupDescription: Access to the ECS hosts and the tasks/containers that run on them
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !Ref LBSecurityGroup
+          IpProtocol: -1
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-ECS-Hosts
   ECSLaunchConfiguration:
     Type: "AWS::AutoScaling::LaunchConfiguration"
     Properties:
@@ -33,6 +47,8 @@ Resources:
       InstanceType: "t2.nano"
       IamInstanceProfile: !Ref ECSInstanceProfile
       KeyName: ecs_key
+      SecurityGroups:
+        - !Ref ECSSecurityGroup
       UserData:
         "Fn::Base64": !Sub |
           #!/bin/bash

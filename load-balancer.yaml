@@ -5,18 +5,31 @@ Parameters:
     Description: Subnets for ECS cluster
     Type: List<AWS::EC2::Subnet::Id>
 Resources:
+  LBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: vpc-7648db1e
+      GroupDescription: Access to the load balancer that sits in front of ECS
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
   LoadBalancer:
     Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    DependsOn: LBSecurityGroup
     Properties:
       IpAddressType: ipv4
       Name: ParleyLoadBalancer
       Subnets: !Ref Subnets
+      SecurityGroups:
+        - !Ref LBSecurityGroup
   LoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       LoadBalancerArn: !Ref LoadBalancer
-      Port: 80
-      Protocol: HTTP
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: arn:aws:acm:eu-west-2:572391843849:certificate/2365cf3d-6036-42b8-a7ee-c25eef0a151c
       DefaultActions:
         - Type: forward
           TargetGroupArn: !Ref DefaultTargetGroup
@@ -31,3 +44,5 @@ Outputs:
   Listener:
     Description: Reference of the load balancer listener
     Value: !Ref LoadBalancerListener
+  LBSecurityGroup:
+    Value: !Ref LBSecurityGroup
