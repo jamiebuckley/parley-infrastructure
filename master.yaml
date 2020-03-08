@@ -8,3 +8,13 @@ Resources:
       TemplateURL: https://s3.eu-west-2.amazonaws.com/infrastructure.parley.abstractmechanics.co.uk/cluster.yaml
       Parameters:
         Subnets: "subnet-898120f3, subnet-91a2c7f8, subnet-b56b9ff9"
+  PipelineRoles:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.eu-west-2.amazonaws.com/infrastructure.parley.abstractmechanics.co.uk/pipeline-roles.yaml
+  ParleyServerPipeline:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.eu-west-2.amazonaws.com/infrastructure.parley.abstractmechanics.co.uk/server-pipeline.yaml
+      Parameters:
+        PipelineRole: !GetAtt PipelineRoles.Outputs.PipelineRole

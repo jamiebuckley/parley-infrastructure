@@ -1,0 +1,63 @@
+Parameters:
+  PipelineRole:
+    Description: Pipeline service role
+    Type: String
+Resources:
+  ParleyServerArtifactStoreBucket:
+    Type: 'AWS::S3::Bucket'
+  ParleyServerPipelineWebhook:
+    Type: 'AWS::CodePipeline::Webhook'
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: '{{resolve:secretsmanager:GithubKey:SecretString:githubkey}}'
+      Filters:
+        - JsonPath: $.ref
+          MatchEquals: 'refs/heads/{Branch}'
+      TargetPipeline: !Ref ParleyServerPipeline
+      TargetAction: SourceAction
+      Name: ParleyServerPipelineWebhook
+      TargetPipelineVersion: !GetAtt
+        - ParleyServerPipeline
+        - Version
+      RegisterWithThirdParty: true
+  ParleyServerPipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      Name: parley-server-events-pipeline
+      RoleArn: !Ref PipelineRole
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: SourceAction
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                Owner: jamiebuckley
+                Repo: parley-server
+                Branch: master
+                OAuthToken: '{{resolve:secretsmanager:GithubKey:SecretString:githubkey}}'
+                PollForSourceChanges: false
+              RunOrder: 1
+        - Name: Beta
+          Actions:
+            - Name: BetaAction
+              InputArtifacts:
+                - Name: SourceOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CodeDeploy
+              Configuration:
+                ApplicationName: ParleyServer
+                DeploymentGroupName: ParleyFleet
+              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ParleyServerArtifactStoreBucket
