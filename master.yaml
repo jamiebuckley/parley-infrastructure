@@ -2,33 +2,13 @@ Description: >
   CloudFormation stacks for Parley
   Author: Jamie Buckley
 Resources:
-  LoadBalancer:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://s3.eu-west-2.amazonaws.com/infrastructure.parley.abstractmechanics.co.uk/load-balancer.yaml
-      Parameters:
-        Subnets: "subnet-898120f3, subnet-91a2c7f8, subnet-b56b9ff9"
-  ECS:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://s3.eu-west-2.amazonaws.com/infrastructure.parley.abstractmechanics.co.uk/cluster.yaml
-      Parameters:
-        Subnets: "subnet-898120f3, subnet-91a2c7f8, subnet-b56b9ff9"
-        LBSecurityGroup: !GetAtt LoadBalancer.Outputs.LBSecurityGroup
   PipelineRoles:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.eu-west-2.amazonaws.com/infrastructure.parley.abstractmechanics.co.uk/pipeline-roles.yaml
-  ParleyServerPipeline:
+      TemplateURL: pipeline-roles.yaml
+  ParleyFrontendPipeline:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.eu-west-2.amazonaws.com/infrastructure.parley.abstractmechanics.co.uk/server-pipeline.yaml
+      TemplateURL: frontend-pipeline.yaml
       Parameters:
         PipelineRole: !GetAtt PipelineRoles.Outputs.PipelineRole
-  ECSService:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://s3.eu-west-2.amazonaws.com/infrastructure.parley.abstractmechanics.co.uk/ecs-service.yaml
-      Parameters:
-        ClusterName: !GetAtt ECS.Outputs.Name
-        LoadBalancer: !GetAtt LoadBalancer.Outputs.Listener

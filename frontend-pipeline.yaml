@@ -1,0 +1,98 @@
+Parameters:
+  PipelineRole:
+    Description: Pipeline service role
+    Type: String
+Resources:
+  ParleyFrontendArtifactStoreBucket:
+    Type: 'AWS::S3::Bucket'
+  ParleyFrontendPipelineWebhook:
+    Type: 'AWS::CodePipeline::Webhook'
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: '{{resolve:secretsmanager:GithubKey:SecretString:githubkey}}'
+      Filters:
+        - JsonPath: $.ref
+          MatchEquals: 'refs/heads/{Branch}'
+      TargetPipeline: !Ref ParleyFrontendPipeline
+      TargetAction: SourceAction
+      Name: ParleyFrontendPipelineWebhook
+      TargetPipelineVersion: !GetAtt
+        - ParleyFrontendPipeline
+        - Version
+      RegisterWithThirdParty: true
+  ParleyFrontendBuildProject:
+    Type: 'AWS::CodeBuild::Project'
+    Properties:
+      Name: ParleyFrontendBuild
+      ServiceRole: !Ref PipelineRole
+      Artifacts:
+        Type: CODEPIPELINE
+      Cache:
+        Location: LOCAL
+        Modes:
+          - LOCAL_DOCKER_LAYER_CACHE
+        Type: LOCAL
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+        PrivilegedMode: true
+      Source:
+        Type: CODEPIPELINE
+  ParleyFrontendPipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      Name: parley-frontend-pipeline2
+      RoleArn: !Ref PipelineRole
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: SourceAction
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                Owner: jamiebuckley
+                Repo: parley-frontend
+                Branch: master
+                OAuthToken: '{{resolve:secretsmanager:GithubKey:SecretString:githubkey}}'
+                PollForSourceChanges: false
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: BuildAction
+              InputArtifacts:
+                - Name: SourceOutput
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              OutputArtifacts:
+                - Name: BuildOutput
+              Configuration:
+                ProjectName: ParleyFrontendBuild
+                PrimarySource: SourceOutput
+              RunOrder: 1
+        - Name: Deploy
+          Actions:
+            - Name: DeployAction
+              InputArtifacts:
+                - Name: BuildOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: S3
+              Configuration:
+                BucketName: parley.abstractmechanics.co.uk
+                Extract: true
+                ObjectKey: "Test"
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ParleyFrontendArtifactStoreBucket

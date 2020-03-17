@@ -1,1 +1,1 @@
-aws s3 sync . s3://infrastructure.parley.abstractmechanics.co.uk --exclude ".git/*" --exclude ".idea/*"
+aws cloudformation package --template-file master.yaml --s3-bucket infrastructure.parley.abstractmechanics.co.uk --output-template-file master-deploy.yaml
