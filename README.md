@@ -10,7 +10,7 @@ aws cloudformation package --template-file master.yaml --s3-bucket infrastructur
 
 ####2. Deploy
 ```shell script
-aws cloudformation deploy --template-file master-deploy.yaml --stack-name parley
+aws cloudformation deploy --template-file master-deploy.yaml --stack-name parley --capability CAPABILITY_IAM
 ```
 
 ####3. Delete

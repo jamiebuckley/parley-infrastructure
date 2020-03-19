@@ -1,3 +1,5 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: The pipeline for Parley frontend
 Parameters:
   PipelineRole:
     Description: Pipeline service role
@@ -5,6 +7,7 @@ Parameters:
 Resources:
   ParleyFrontendArtifactStoreBucket:
     Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Retain
   ParleyFrontendPipelineWebhook:
     Type: 'AWS::CodePipeline::Webhook'
     Properties:
@@ -43,7 +46,7 @@ Resources:
   ParleyFrontendPipeline:
     Type: 'AWS::CodePipeline::Pipeline'
     Properties:
-      Name: parley-frontend-pipeline2
+      Name: parley-frontend-pipeline
       RoleArn: !Ref PipelineRole
       Stages:
         - Name: Source

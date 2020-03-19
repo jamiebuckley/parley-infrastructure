@@ -39,7 +39,7 @@ Resources:
           IpProtocol: -1
       Tags:
         - Key: Name
-          Value: !Sub ${EnvironmentName}-ECS-Hosts
+          Value: !Sub ECS-Hosts
   ECSLaunchConfiguration:
     Type: "AWS::AutoScaling::LaunchConfiguration"
     Properties:

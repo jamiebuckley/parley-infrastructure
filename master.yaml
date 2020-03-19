@@ -2,10 +2,36 @@ Description: >
   CloudFormation stacks for Parley
   Author: Jamie Buckley
 Resources:
+  LoadBalancer:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: load-balancer.yaml
+      Parameters:
+        Subnets: "subnet-898120f3, subnet-91a2c7f8, subnet-b56b9ff9"
+  ECS:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cluster.yaml
+      Parameters:
+        Subnets: "subnet-898120f3, subnet-91a2c7f8, subnet-b56b9ff9"
+        LBSecurityGroup: !GetAtt LoadBalancer.Outputs.LBSecurityGroup
+  ECSService:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ecs-service.yaml
+      Parameters:
+        ClusterName: !GetAtt ECS.Outputs.Name
+        LoadBalancer: !GetAtt LoadBalancer.Outputs.Listener
   PipelineRoles:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: pipeline-roles.yaml
+  ParleyServerPipeline:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: server-pipeline.yaml
+      Parameters:
+        PipelineRole: !GetAtt PipelineRoles.Outputs.PipelineRole
   ParleyFrontendPipeline:
     Type: AWS::CloudFormation::Stack
     Properties:
