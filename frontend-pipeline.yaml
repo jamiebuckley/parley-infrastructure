@@ -95,7 +95,6 @@ Resources:
               Configuration:
                 BucketName: parley.abstractmechanics.co.uk
                 Extract: true
-                ObjectKey: "Test"
       ArtifactStore:
         Type: S3
         Location: !Ref ParleyFrontendArtifactStoreBucket
